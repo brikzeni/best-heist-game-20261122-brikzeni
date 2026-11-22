@@ -19,12 +19,8 @@ export const ROOMS = {
   vault: { exits: [{ to: 'gallery' }, { to: 'corridor' }, { to: 'vent' }], grants: 'artifact' },
 };
 
-export const BEATS = [
-  { room: 'entry', type: 'teach', intensity: 0.1 },
-  { room: 'gallery', type: 'develop', intensity: 0.5 },
-  { room: 'vault', type: 'twist', intensity: 0.8 },
-  { room: 'escape', type: 'climax', intensity: 1.0 },
-];
+// Rooms: the museum is a small graph, so the player can always reach the
+// vault and both exits. goalReachable() (BFS over ROOMS) asserts this at boot.
 
 // BFS over (room, held keys): the goal must be reachable from the start.
 export function goalReachable(rooms, start, goal) {
@@ -100,10 +96,9 @@ export const OBSTACLES = [
 export const FRAMES = [
   { x: 60, y: 24, w: 90, h: 54, hue: '#B85C38' },
   { x: 640, y: 24, w: 90, h: 54, hue: '#4E7A9E' },
-  { x: 300, y: 244, w: 0, h: 0, hue: '' }, // placeholder removed below
   { x: 940, y: 24, w: 90, h: 54, hue: '#7A4E9E' },
   { x: 1080, y: 24, w: 90, h: 54, hue: '#3E9E7A' },
-].filter((f) => f.w > 0);
+];
 
 export const GUARD_PATROLS = [
   {
@@ -114,8 +109,10 @@ export const GUARD_PATROLS = [
   },
   {
     name: 'Voss', color: '#FF9F5A',
-    // Tight loop guarding the vault door approach.
-    waypoints: [[980, 300], [980, 520], [1020, 520], [1020, 300]],
+    // Tight loop guarding the vault door approach. West leg at x=1000: the
+    // display case ends at x=970 and the guard's radius is 14, so x=980
+    // would freeze him against the case on every loop.
+    waypoints: [[1000, 300], [1000, 520], [1020, 520], [1020, 300]],
   },
   {
     name: 'Iris', color: '#E58AE5',

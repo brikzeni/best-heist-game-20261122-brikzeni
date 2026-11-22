@@ -2,7 +2,7 @@
 // Art direction: midnight-blue marble, warm gold light, turquoise surveillance,
 // red alarm. Safe cover reads as solid and dark; danger reads as light cones.
 
-import { CANVAS_W, CANVAS_H, PALETTE, WIN_RANKS } from './config.js';
+import { CANVAS_W, CANVAS_H, PALETTE } from './config.js';
 import { WALLS, OBSTACLES, FRAMES, ARTIFACT, EXITS, VENT } from './level.js';
 
 function rr(ctx, x, y, w, h, r) {
@@ -61,11 +61,30 @@ export function drawGame(ctx, game) {
 }
 
 function drawFloor(ctx, game) {
-  for (let ty = 0; ty < 9; ty++) {
-    for (let tx = 0; tx < 16; tx++) {
+  // Large low-contrast marble slabs (320x180), not a chessboard: the floor
+  // should read as one polished surface, not a grid of tiles.
+  for (let ty = 0; ty < 4; ty++) {
+    for (let tx = 0; tx < 4; tx++) {
       ctx.fillStyle = (tx + ty) % 2 === 0 ? PALETTE.floorA : PALETTE.floorB;
-      ctx.fillRect(tx * 80, ty * 80, 80, 80);
+      ctx.fillRect(tx * 320, ty * 180, 320, 180);
+      // faint vein in each slab
+      ctx.strokeStyle = 'rgba(232,179,75,0.05)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(tx * 320 + 40, ty * 180 + 20);
+      ctx.quadraticCurveTo(tx * 320 + 160, ty * 180 + 90, tx * 320 + 280, ty * 180 + 150);
+      ctx.stroke();
     }
+  }
+  // warm light pools: the gallery, the vault approach, the lobby
+  for (const [lx, ly, lr] of [[640, 380, 260], [1050, 200, 180], [200, 600, 170]]) {
+    const pool = ctx.createRadialGradient(lx, ly, 10, lx, ly, lr);
+    pool.addColorStop(0, 'rgba(232,179,75,0.10)');
+    pool.addColorStop(1, 'rgba(232,179,75,0)');
+    ctx.fillStyle = pool;
+    ctx.beginPath();
+    ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+    ctx.fill();
   }
   // polished sheen: a soft diagonal gold wash
   const sheen = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
@@ -114,14 +133,29 @@ function drawVent(ctx) {
 
 function drawFrames(ctx) {
   for (const f of FRAMES) {
+    // Gilded frame with a small painted landscape inside, not a flat colour:
+    // sky, a sun or moon, and a hill line, so it reads as a painting.
     ctx.fillStyle = '#0A0E22';
     ctx.fillRect(f.x - 6, f.y - 6, f.w + 12, f.h + 12);
     ctx.strokeStyle = PALETTE.gold;
     ctx.lineWidth = 2;
     ctx.strokeRect(f.x - 6, f.y - 6, f.w + 12, f.h + 12);
-    ctx.fillStyle = f.hue;
+    const sky = ctx.createLinearGradient(f.x, f.y, f.x, f.y + f.h);
+    sky.addColorStop(0, '#1B2A52');
+    sky.addColorStop(1, f.hue);
+    ctx.fillStyle = sky;
     ctx.fillRect(f.x, f.y, f.w, f.h);
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fillStyle = 'rgba(242,234,216,0.85)';
+    ctx.beginPath();
+    ctx.arc(f.x + f.w * 0.68, f.y + f.h * 0.3, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(7,11,26,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(f.x, f.y + f.h);
+    ctx.quadraticCurveTo(f.x + f.w * 0.5, f.y + f.h * 0.45, f.x + f.w, f.y + f.h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
     ctx.beginPath();
     ctx.moveTo(f.x, f.y + f.h);
     ctx.lineTo(f.x + f.w * 0.5, f.y);
@@ -206,21 +240,29 @@ function drawObstacles(ctx, game, t) {
       ctx.lineWidth = 1.5;
       rr(ctx, o.x, o.y, o.w, o.h, 6);
       ctx.stroke();
-      // abstract dancer figure
+      // "The Dancer": a graceful figure, one arm raised, on a round base.
       ctx.fillStyle = '#C9B48A';
       ctx.beginPath();
-      ctx.arc(o.x + o.w / 2, o.y + 18, 8, 0, Math.PI * 2);
+      ctx.ellipse(o.x + o.w / 2, o.y + o.h - 10, 16, 4, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#C9B48A';
-      ctx.lineWidth = 5;
+      ctx.lineWidth = 6;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(o.x + o.w / 2, o.y + 26);
-      ctx.quadraticCurveTo(o.x + o.w / 2 - 12, o.y + 44, o.x + o.w / 2 + 2, o.y + 58);
+      ctx.moveTo(o.x + o.w / 2, o.y + o.h - 12);
+      ctx.quadraticCurveTo(o.x + o.w / 2 - 6, o.y + 38, o.x + o.w / 2 + 2, o.y + 20);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(o.x + o.w / 2 - 4, o.y + 34);
-      ctx.quadraticCurveTo(o.x + o.w / 2 - 26, o.y + 22, o.x + o.w / 2 - 30, o.y + 12);
+      ctx.arc(o.x + o.w / 2 + 2, o.y + 13, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(o.x + o.w / 2 - 2, o.y + 28);
+      ctx.quadraticCurveTo(o.x + o.w / 2 - 22, o.y + 16, o.x + o.w / 2 - 26, o.y + 6);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(o.x + o.w / 2 + 4, o.y + 30);
+      ctx.quadraticCurveTo(o.x + o.w / 2 + 20, o.y + 40, o.x + o.w / 2 + 24, o.y + 52);
       ctx.stroke();
     } else if (o.kind === 'bench') {
       ctx.fillStyle = '#4A3220';
@@ -323,6 +365,13 @@ function drawSmokes(ctx, game) {
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
     ctx.fill();
+    // inner swirls so the cloud reads as smoke, not a flat blob
+    ctx.fillStyle = 'rgba(220,228,245,0.35)';
+    for (const [dx, dy, r] of [[-28, -12, 16], [18, -22, 13], [26, 14, 15], [-14, 22, 12]]) {
+      ctx.beginPath();
+      ctx.arc(s.x + dx, s.y + dy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 }
 
@@ -743,8 +792,8 @@ function drawLost(ctx, game) {
   ctx.font = '13px system-ui, sans-serif';
   ctx.fillText('The cones are honest: watch them sweep, move between beats,', 640, 326);
   ctx.fillText('crouch behind the cases, and spend a decoy before you cross open floor.', 640, 348);
-  const pulse = 0.6 + 0.4 * Math.sin(game.now * 3);
+  const pulse = 0.75 + 0.25 * Math.sin(game.now * 3);
   ctx.fillStyle = `rgba(232,179,75,${pulse})`;
-  ctx.font = '700 16px system-ui, sans-serif';
+  ctx.font = '700 18px system-ui, sans-serif';
   ctx.fillText('PRESS R TO TRY AGAIN', 640, 420);
 }

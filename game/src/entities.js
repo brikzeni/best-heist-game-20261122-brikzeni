@@ -70,8 +70,6 @@ export class Player {
   }
 }
 
-const GUARD_STATES = ['patrol', 'suspicious', 'investigate', 'chase', 'search', 'return'];
-
 export class Guard {
   constructor(def) {
     this.name = def.name;

@@ -16,28 +16,6 @@ export function rayHit(ox, oy, dx, dy, segments, maxDist) {
   return best;
 }
 
-// Visibility polygon from a point: cast one ray per segment endpoint (+/- epsilon).
-export function visibilityPolygon(ox, oy, segments, maxDist) {
-  const angles = new Set();
-  for (const s of segments) {
-    for (const [px, py] of [[s.ax, s.ay], [s.bx, s.by]]) {
-      const a = Math.atan2(py - oy, px - ox);
-      angles.add(a - 0.0002);
-      angles.add(a);
-      angles.add(a + 0.0002);
-    }
-  }
-  const pts = [];
-  for (const a of angles) {
-    const dx = Math.cos(a);
-    const dy = Math.sin(a);
-    const t = rayHit(ox, oy, dx, dy, segments, maxDist);
-    pts.push([ox + dx * t, oy + dy * t, a]);
-  }
-  pts.sort((p, q) => p[2] - q[2]);
-  return pts.map(([x, y]) => [x, y]);
-}
-
 // Wedge (facing +/- fov/2, out to range) clipped by what the walls allow.
 export function conePolygon(ox, oy, facing, fov, range, segments) {
   const steps = 26;

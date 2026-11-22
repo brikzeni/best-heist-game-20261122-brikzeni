@@ -47,11 +47,12 @@ export function applyShotPreset(game, name) {
     game.objective = 'Hold E — lift the Glass Star';
   } else if (name === 'escape') {
     // The getaway: artifact held, a guard chasing, alarm ALERT, one camera dark.
-    // The guard starts far enough back that the chase reads on camera without
-    // catching the thief inside the first second.
-    p.x = 560; p.y = 600; p.crouch = false; p.hasArtifact = true;
-    g1.x = 860; g1.y = 400; g1.facing = -Math.PI * 0.6; g1.state = 'chase';
-    g1.suspicion = 100; g1.lastSeen = { x: 560, y: 600 }; g1.loseSightAt = game.now + 30;
+    // The guard starts ~590px back at 235px/s (ALERT boost), so the frame is
+    // caught mid-chase: the shot is taken ~1.5s after the first frame, well
+    // before he can close the gap.
+    p.x = 500; p.y = 620; p.crouch = false; p.hasArtifact = true;
+    g1.x = 1000; g1.y = 300; g1.facing = Math.PI * 0.82; g1.state = 'chase';
+    g1.suspicion = 100; g1.lastSeen = { x: 500, y: 620 }; g1.loseSightAt = game.now + 30;
     g2.x = 880; g2.y = 300; g2.facing = Math.PI; g2.wp = 3;
     g3.x = 1150; g3.y = 640; g3.facing = -Math.PI / 2; g3.wp = 1;
     g4.x = 150; g4.y = 560; g4.facing = 0; g4.wp = 0;
